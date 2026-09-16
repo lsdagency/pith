@@ -1,16 +1,21 @@
 # Deploying
 
-Two Netlify sites, one codebase, same team ("LSD Agency", `liam-nlsmybc`).
+**Source of truth: https://github.com/lsdagency/pith** (public). Only the site lives there. The agency repo (`lsd-agent-team`) is never pushed anywhere; the site is copied out of its `site/` folder with `git subtree`.
 
-| Site | Netlify id | Address | Purpose |
+| Site | Netlify id | Address | Builds from |
 |---|---|---|---|
-| **pith-holding** | `3838c93d-c418-41ed-80bb-cb8f4186e322` | pith-holding.netlify.app → `pithstudio.co.uk` at the switch | **Production.** The public holding page. Only deploy here on Liam's say-so. |
-| **pith-dev** | `2a9f9eae-25ee-4a26-ac1d-042343df574b` | pith-dev.netlify.app | **Dev.** Unlisted (noindex, never linked, unguessable name). The full website is built and reviewed here. Site-wide password protection is a paid Netlify feature (API returned 422 on the free plan). |
+| **pith-holding** | `3838c93d-c418-41ed-80bb-cb8f4186e322` | https://pithstudio.co.uk | `main` on lsdagency/pith. **Production.** |
+| **pith-dev** | `2a9f9eae-25ee-4a26-ac1d-042343df574b` | https://pith-dev.netlify.app | `dev` branch on lsdagency/pith. Unlisted (noindex, unlinked). The full website is built here. |
 
-Build with `npm run build` in `site/`, then deploy `dist/` with the Netlify MCP `deploy-site` operation for the site id above (it returns an `npx @netlify/mcp … --site-id …` command to run from inside `dist/`).
+## Publishing a change (from the agency repo)
+1. Commit in `lsd-agent-team` as usual (the site is `site/`).
+2. Push the site subtree:
+   `git subtree push --prefix=site git@github.com:lsdagency/pith.git main`
+   (for dev work push to `dev` instead: `git subtree push --prefix=site git@github.com:lsdagency/pith.git dev`)
+3. Netlify builds automatically (`npm run build`, publishes `dist/`, Node 22, all from `netlify.toml`). Env vars live in Netlify, not in the repo: `PUBLIC_SANITY_PROJECT_ID`, `PUBLIC_SANITY_DATASET`, `PUBLIC_HUBSPOT_FORM_ID` are set on pith-holding.
 
-Rules
+## Rules
 - Production is `pith-holding` and nothing else. Never point `pithstudio.co.uk` at `pith-dev`.
-- The dev site keeps `noindex`. Never remove it there, and never link to the dev address from anywhere public.
-- When a full-site page is ready to go public, it is promoted by deploying the same build to `pith-holding`, not by moving the domain.
-- Forms: `pith-dev` has Netlify Forms off, so test submissions from dev don't pollute the record. HubSpot still receives them unless `PUBLIC_HUBSPOT_FORM_ID` is blanked in `.env` for dev builds.
+- `pith-dev` keeps `noindex` and is never linked from anywhere public.
+- Full-site pages are promoted by merging `dev` into `main`, not by moving the domain.
+- The local build-and-upload path (Netlify MCP `deploy-site`) still works as a fallback but bypasses git; avoid it once GitHub is linked.
