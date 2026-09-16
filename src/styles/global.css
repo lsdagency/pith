@@ -69,6 +69,21 @@ p { line-height: 1.1; }
   .site-footer .year { order: 4; }
 }
 
+/* Cookie consent: a square hairline card, bottom-left on desktop, full width on phones. */
+.consent { position: fixed; left: var(--gutter); bottom: 24px; z-index: 40; width: min(380px, calc(100vw - 2 * var(--gutter))); background: var(--white); border: 1px solid var(--black); padding: 22px 24px 20px; box-shadow: 0 12px 40px rgba(3,3,3,.08); animation: consent-in .6s var(--ease) both; }
+.consent-t { margin: 0 0 8px; font-family: var(--serif); font-weight: 900; font-size: 20px; letter-spacing: -.02em; line-height: 1; }
+.consent-p { margin: 0 0 16px; font-size: 14px; line-height: 1.4; color: var(--black); }
+.consent-a { display: flex; align-items: center; gap: 20px; }
+.consent-yes { position: relative; overflow: hidden; isolation: isolate; cursor: pointer; font: inherit; font-weight: 700; font-size: 14px; color: var(--white); background: var(--black); border: 0; border-radius: 0; padding: 13px 20px; }
+.consent-yes .fill { position: absolute; inset: 0; background: var(--pacific); transform: translateX(-101%); transition: transform .5s var(--ease); z-index: -1; }
+.consent-yes:hover .fill, .consent-yes:focus-visible .fill { transform: none; }
+.consent-yes .dot { font-style: normal; transition: color .3s; }
+.consent-yes:hover .dot, .consent-yes:focus-visible .dot { color: var(--white); }
+.consent-no { font: inherit; font-weight: 700; font-size: 14px; color: var(--black); background: none; border: 0; padding: 0; cursor: pointer; }
+.site-footer .menu { display: flex; gap: 14px; }
+@keyframes consent-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@media (max-width: 759px) { .consent { left: 12px; right: 12px; bottom: 12px; width: auto; } .site-footer .menu { justify-content: center; } }
+
 /* Text links: 1px underline that draws in from the left. */
 .u { position: relative; text-decoration: none; }
 .u::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .45s var(--ease); }

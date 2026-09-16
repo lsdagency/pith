@@ -44,6 +44,20 @@ const canonical = new URL(Astro.url.pathname.replace(/index\.html$/, '').replace
       address: { '@type': 'PostalAddress', streetAddress: '9 Greyfriars Road', addressLocality: 'Reading', postalCode: 'RG1 1NU', addressCountry: 'GB' },
       areaServed: 'GB', knowsAbout: ['Paid social', 'Meta Ads', 'Performance marketing', 'Digital strategy'],
     })} />
+    <!-- Consent Mode v2: everything denied until the visitor chooses. Stored choice is replayed before GTM loads. -->
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500 });
+      try {
+        var c = JSON.parse(localStorage.getItem('pith-consent') || 'null');
+        if (c && c.until > Date.now()) {
+          var v = c.granted ? 'granted' : 'denied';
+          gtag('consent', 'update', { ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v });
+          window.__pithConsent = c.granted;
+        }
+      } catch (e) {}
+    </script>
     <!-- Google Tag Manager -->
     <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -78,14 +92,36 @@ const canonical = new URL(Astro.url.pathname.replace(/index\.html$/, '').replace
       <footer class="site-footer rv" style="--d:1.2s">
         <p class="year">© {new Date().getFullYear()}</p>
         <p class="legal">Pith is a trading name of Liam Scott Digital Ltd, registered in England and Wales, company number 17243833. Registered office: 9 Greyfriars Road, Reading RG1 1NU.</p>
-        <p class="menu"><a class="u" href="/privacy">Privacy</a></p>
+        <p class="menu"><a class="u" href="/privacy">Privacy</a> <a class="u" href="#" id="cookies-link">Cookies</a></p>
         <p class="mark"><img src="/pith-mark.svg" alt="" width="230" height="191" /></p>
       </footer>
     </div>
 
+    <div class="consent" id="consent" hidden role="dialog" aria-live="polite" aria-label="Cookies">
+      <p class="consent-t">Cookies<span class="dot">.</span></p>
+      <p class="consent-p">We'd like to use analytics cookies to see how the site is used. Nothing else. <a class="u" href="/privacy">Privacy</a></p>
+      <div class="consent-a">
+        <button type="button" class="consent-yes" id="consent-yes"><span class="fill" aria-hidden="true"></span><span class="label">Accept<i class="dot">.</i></span></button>
+        <button type="button" class="consent-no u" id="consent-no">Essential only</button>
+      </div>
+    </div>
     <script>
       const intro = document.getElementById('intro');
-      const reveal = () => document.querySelectorAll('.rv, .mask, .draw').forEach((el) => el.classList.add('in'));
+      const consent = document.getElementById('consent') as HTMLElement;
+      const decide = (granted: boolean) => {
+        const v = granted ? 'granted' : 'denied';
+        (window as any).gtag?.('consent', 'update', { ad_storage: v, ad_user_data: v, ad_personalization: v, analytics_storage: v });
+        (window as any).dataLayer?.push({ event: 'consent_update', consent_granted: granted });
+        try { localStorage.setItem('pith-consent', JSON.stringify({ granted, until: Date.now() + 365 * 864e5 })); } catch (e) {}
+        consent.hidden = true;
+      };
+      document.getElementById('consent-yes')?.addEventListener('click', () => decide(true));
+      document.getElementById('consent-no')?.addEventListener('click', () => decide(false));
+      document.getElementById('cookies-link')?.addEventListener('click', (e) => { e.preventDefault(); consent.hidden = false; });
+      const reveal = () => {
+        document.querySelectorAll('.rv, .mask, .draw').forEach((el) => el.classList.add('in'));
+        if ((window as any).__pithConsent === undefined) setTimeout(() => { consent.hidden = false; }, 900);
+      };
       const skip = document.documentElement.classList.contains('no-intro') || matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!intro || skip) {
         Promise.race([document.fonts?.ready ?? Promise.resolve(), new Promise((r) => setTimeout(r, 600))]).then(reveal, reveal);
