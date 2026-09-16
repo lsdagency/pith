@@ -228,6 +228,9 @@ const options = {
       await toHubSpot(fd, form.dataset.hsPortal ?? '', form.dataset.hsForm ?? '').catch((x) => console.warn(x));
       root.querySelectorAll<HTMLElement>('.kick, .line, .ask, form').forEach((el) => (el.hidden = true));
       done.hidden = false;
+      // Tell GTM. Fire a conversion on the `pith_enquiry` event; who/what/need come along as parameters.
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({ event: 'pith_enquiry', pith_who: picked.who, pith_what: picked.what, pith_need: picked.need, pith_marketing_optin: fd.get('marketing') === 'yes' });
       (document.getElementById('done-p') as HTMLElement).textContent = 'A member of our team will get back to you shortly to book in a call.';
     } catch (x) { console.warn(x); err.classList.add('show'); btn.disabled = false; label.innerHTML = 'Send<i class="dot">.</i>'; }
   });
