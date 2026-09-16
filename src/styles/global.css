@@ -16,6 +16,7 @@
   --bounce: cubic-bezier(.34, 1.56, .64, 1);
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* the kicker is display:flex, which beat the hidden attribute on the done state */
 /* One gradient for the whole document, sized to the full page height, so there is never a seam. */
 html { min-height: 100%; background: var(--mono10); }
 body {
