@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Thanks · Pith">
+  <main class="thanks">
+    <h1><span class="mask" style="--d:.15s"><span>Got it<span class="pop dot" style="--d:.7s">.</span></span></span></h1>
+    <p class="rv" style="--d:.4s">One line was plenty. We'll read it properly and reply from liam@lsdagency.co.uk.</p>
+  </main>
+</Base>
+<style>
+  .thanks { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: clamp(40px, 8vh, 96px) 0; }
+  h1 { font-size: clamp(40px, 5.2vw, 76px); margin-bottom: 22px; }
+  p { margin: 0; max-width: 40ch; font-size: clamp(17px, 1.5vw, 21px); line-height: 1.25; }
+</style>

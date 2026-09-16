@@ -1,0 +1,110 @@
+/* Self-hosted from Fontshare (free for web use). Three files, ~50 KB in total. */
+@font-face { font-family: "Zodiak"; font-weight: 900; font-style: normal; font-display: swap; src: url("/fonts/zodiak-900.woff2") format("woff2"); }
+@font-face { font-family: "Outfit"; font-weight: 300; font-style: normal; font-display: swap; src: url("/fonts/outfit-300.woff2") format("woff2"); }
+@font-face { font-family: "Outfit"; font-weight: 700; font-style: normal; font-display: swap; src: url("/fonts/outfit-700.woff2") format("woff2"); }
+
+:root {
+  --black: #030303; --white: #ffffff; --pacific: #00839E; --aqua: #8CFBDE;
+  --mono10: #E6E6E6; --mono20: #CDCDCD; --mono40: #9A9A9A; --mono60: #686868; --mono70: #4F4F4F;
+  --serif: "Zodiak", Georgia, "Times New Roman", serif;
+  --sans: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --gutter: clamp(20px, 5vw, 64px);
+}
+@media (max-width: 959px) { :root { --gutter: 40px; } } /* Liam, 15 Sep: thinner body on phones, further from the edge */
+:root {
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --bounce: cubic-bezier(.34, 1.56, .64, 1);
+}
+* { box-sizing: border-box; }
+/* One gradient for the whole document, sized to the full page height, so there is never a seam. */
+html { min-height: 100%; background: var(--mono10); }
+body {
+  margin: 0; min-height: 100%; color: var(--black);
+  background-color: var(--white);
+  background-image: radial-gradient(ellipse at 50% 40%, #ffffff 0%, #f2f2f1 45%, var(--mono10) 100%);
+  background-repeat: no-repeat; background-size: 100% 100%;
+  font-family: var(--sans); font-weight: 300; line-height: 1.1;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+::selection { background: var(--aqua); color: var(--black); }
+
+/* The page clips the photo bleed so nothing scrolls past the fold on desktop. */
+.page { position: relative; overflow: hidden; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding: clamp(20px, 4vw, 44px) var(--gutter); }
+
+/* Header: the wordmark, and the tagline beside it. */
+.site-header { position: relative; z-index: 2; display: flex; align-items: center; gap: clamp(18px, 2.5vw, 36px); }
+.site-header a { display: flex; align-items: center; }
+.site-header img { height: 32px; width: auto; display: block; }
+.site-header .tag { margin: 0; font-family: var(--serif); font-weight: 900; font-size: 17px; letter-spacing: -.02em; line-height: 1; }
+.site-header .li { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 14px; color: var(--black); }
+.site-header .li svg { width: 22px; height: 11px; transition: transform .45s var(--ease); }
+.site-header .li:hover svg, .site-header .li:focus-visible svg { transform: translateX(5px); }
+.site-header .li:hover, .site-header .li:focus-visible { color: var(--pacific); outline: none; }
+
+/* Type from the book: H1 Zodiak 95% / -3%, H2 Outfit Bold 110%, body Outfit Light. */
+h1 { font-family: var(--serif); font-weight: 900; line-height: .95; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--sans); font-weight: 700; line-height: 1.1; margin: 0; }
+p { line-height: 1.1; }
+.dot { color: var(--pacific); }
+.rule { border: 0; border-top: 1px solid var(--black); margin: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Footer. Desktop: year and legal on the left, Privacy and the mark on the right.
+   Phone: stacked and centred in the order Privacy, legal, mark, year. */
+.site-footer { position: relative; z-index: 2; margin-top: auto; padding-top: 18px; display: flex; align-items: center; gap: 10px 14px; font-size: 12px; line-height: 1.35; color: var(--black); }
+.site-footer p { margin: 0; }
+.site-footer .year { font-weight: 700; }
+.site-footer .legal { font-size: 11px; color: var(--mono70); }
+.site-footer .menu { margin-left: auto; }
+.site-footer .menu a { text-decoration: none; color: var(--black); }
+.site-footer .mark img { display: block; height: 16px; width: auto; }
+@media (max-width: 759px) {
+  .site-footer { flex-direction: column; text-align: center; gap: 18px; padding: 56px 8px 28px; }
+  .site-footer .menu { margin-left: 0; order: 1; font-size: 14px; font-weight: 700; }
+  .site-footer .legal { order: 2; }
+  .site-footer .mark { order: 3; }
+  .site-footer .mark img { height: 24px; }
+  .site-footer .year { order: 4; }
+}
+
+/* Text links: 1px underline that draws in from the left. */
+.u { position: relative; text-decoration: none; }
+.u::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .45s var(--ease); }
+.u:hover::after, .u:focus-visible::after { transform: scaleX(1); }
+
+/* Entrance choreography: .rv fades up, .mask slides a line up out of a clip, .pop scales in. */
+.rv { opacity: 0; transform: translateY(18px); transition: opacity .8s var(--ease), transform .9s var(--ease); transition-delay: var(--d, 0s); }
+.rv.in { opacity: 1; transform: none; }
+.mask { display: block; overflow: hidden; padding-bottom: .14em; margin-bottom: -.14em; }
+.mask > span { display: block; transform: translateY(110%); transition: transform 1s var(--ease); transition-delay: var(--d, 0s); }
+.in .mask > span, .mask.in > span { transform: none; }
+.pop { display: inline-block; transform: scale(0); transform-origin: 50% 70%; transition: transform .6s var(--bounce); transition-delay: var(--d, 0s); }
+.in .pop { transform: scale(1); }
+/* Hairlines draw from the left. */
+.draw { transform: scaleX(0); transform-origin: left; transition: transform 1s var(--ease); transition-delay: var(--d, 0s); }
+.draw.in, .in .draw { transform: none; }
+
+/* The intro: the mark inks in, the stop drops in, then it all lifts away. Once per session. */
+.intro { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--white);
+  background-image: radial-gradient(ellipse at 50% 40%, #ffffff 0%, #f2f2f1 45%, var(--mono10) 100%); }
+.intro svg { width: clamp(96px, 12vw, 160px); height: auto; overflow: visible; }
+.intro .ink { clip-path: inset(0 100% 0 0); }
+.intro.go .ink { clip-path: inset(0 0 0 0); transition: clip-path .9s var(--ease) .1s; }
+.intro .stop { transform: translateY(-140px) scale(.6); transform-origin: 213px 102px; opacity: 0; }
+.intro.go .stop { transform: none; opacity: 1; transition: transform .55s var(--bounce) .85s, opacity .2s linear .85s; }
+.intro.out { opacity: 0; transform: translateY(-2%); transition: opacity .5s var(--ease), transform .6s var(--ease); pointer-events: none; }
+html.no-intro .intro { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rv, .mask > span, .pop, .draw { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .u::after { transition: none; }
+  .intro { display: none; }
+}
+
+/* Phone header: the wordmark alone, centred. No tagline, no LinkedIn (they came from there). */
+@media (max-width: 959px) {
+  .site-header { justify-content: center; }
+  .site-header img { height: 32px; }
+  .site-header .tag, .site-header .li { display: none; }
+}

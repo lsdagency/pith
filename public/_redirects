@@ -1,0 +1,7 @@
+# Only the new domain's own variants. lsdagency.co.uk is deliberately untouched.
+https://www.pithstudio.co.uk/*  https://pithstudio.co.uk/:splat  301!
+http://www.pithstudio.co.uk/*   https://pithstudio.co.uk/:splat  301!
+https://pithstudio.uk/*         https://pithstudio.co.uk/:splat  301!
+http://pithstudio.uk/*          https://pithstudio.co.uk/:splat  301!
+https://www.pithstudio.uk/*     https://pithstudio.co.uk/:splat  301!
+http://www.pithstudio.uk/*      https://pithstudio.co.uk/:splat  301!

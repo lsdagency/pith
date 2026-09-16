@@ -1,0 +1,234 @@
+---
+// Three taps. The page is one unfinished sentence; each blank offers six things we've heard
+// before, plus "something else…" for a few words of their own. Three taps write the line,
+// then it's an email and Send. Every tap is structured data: who, what, need.
+// Netlify Forms records every submission; the HubSpot Forms API gets a copy once the form ID is set.
+const hubspotPortalId = '149257703';
+const hubspotFormId = import.meta.env.PUBLIC_HUBSPOT_FORM_ID ?? '';
+// HubSpot email subscription type the opt-in maps to (Settings → Marketing → Email → Subscription types).
+const hubspotSubscriptionId = import.meta.env.PUBLIC_HUBSPOT_SUBSCRIPTION_ID ?? '';
+const CONSENT_TEXT = 'Yes, send me the occasional email from Pith. Unsubscribe any time.';
+const options = {
+  // Liam's own wording, 15 Sep 2026. Lower-case starts so each reads inside the sentence.
+  who:  { ask: 'Who are you?', chips: ['an ecom brand', 'a subscription brand', 'a B2B firm', 'an agency that needs cover', 'a new brand about to launch'] },
+  what: { ask: "What's happening?", chips: ['our paid ads are underperforming', "we've never run paid ads before", "we're not happy with our agency", 'our ROAS keeps decreasing', "we're launching and our ads aren't ready", "we're looking to scale our spend", "we can't make creative fast enough"] },
+  need: { ask: 'What do you need?', chips: ['someone to manage our account', 'a new campaign from end to end', 'a long-term paid ads partnership', 'temporary cover', 'an honest second opinion', 'a call to talk things through', 'content for our ads'] },
+};
+---
+<div class="tap" id="tap" data-options={JSON.stringify(options)}>
+  <p class="kick rv" style="--d:.25s"><b>What are you looking for?</b><span class="steps" id="steps" aria-hidden="true"><i class="on"></i><i></i><i></i></span></p>
+
+  <p class="line rv" style="--d:.35s" id="line" aria-live="polite">We're{' '}<span class="slot on" role="button" tabindex="0" data-k="who" id="s-who">a … brand</span>{' '}and{' '}<span class="slot" role="button" tabindex="0" data-k="what" id="s-what">something's up</span>.{' '}We need{' '}<span class="slot" role="button" tabindex="0" data-k="need" id="s-need">something</span><span class="stop dot" id="stop">.</span></p>
+
+  <div class="ask rv" style="--d:.5s" id="ask"></div>
+
+  <form name="enquiry" method="POST" action="/thanks" data-netlify="true" netlify-honeypot="bot-field" id="enquiry"
+        data-hs-portal={hubspotPortalId} data-hs-form={hubspotFormId} data-hs-sub={hubspotSubscriptionId} data-consent-text={CONSENT_TEXT} novalidate>
+    <input type="hidden" name="form-name" value="enquiry" />
+    <input type="hidden" name="who" id="f-who" /><input type="hidden" name="what" id="f-what" /><input type="hidden" name="need" id="f-need" /><input type="hidden" name="message" id="f-message" />
+    <p class="hp"><label>Leave this empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label></p>
+    <div class="finish" id="finish" inert><div>
+      <p class="verdict" id="verdict"></p>
+      <div class="two">
+        <div class="field"><label for="email" class="sr">Work email</label><input id="email" name="email" type="email" placeholder="Work email" autocomplete="email" inputmode="email" required /><i class="hair" aria-hidden="true"></i></div>
+        <div class="field"><label for="name" class="sr">Name</label><input id="name" name="name" type="text" placeholder="Name" autocomplete="name" /><i class="hair" aria-hidden="true"></i></div>
+      </div>
+      <label class="optin"><input type="checkbox" name="marketing" id="marketing" value="yes" /><i class="box" aria-hidden="true"></i><span>{CONSENT_TEXT}</span></label>
+      <div class="actions">
+        <button class="send" type="submit"><span class="fill" aria-hidden="true"></span><span class="label">Send<i class="dot">.</i></span></button>
+        <p class="promise">Read and answered by a real person.</p>
+      </div>
+      <p class="err" id="err">That didn't send. Email <a class="u" href="mailto:liam@lsdagency.co.uk">liam@lsdagency.co.uk</a> instead.</p>
+    </div></div>
+  </form>
+
+  <div class="done" id="done" hidden>
+    <h2 class="done-h"><span class="mask in"><span>Got it<span class="dot">.</span></span></span></h2>
+    <hr class="rule" />
+    <p id="done-p"></p>
+  </div>
+</div>
+
+<style>
+  .tap { position: relative; z-index: 1; }
+  .kick { margin: 0 0 16px; font-size: 13px; color: var(--mono60); display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+  .kick b { font-weight: 700; color: var(--black); font-size: 14px; }
+  .steps { display: inline-flex; gap: 6px; }
+  .steps i { width: 22px; height: 2px; background: var(--mono20); transition: background .3s; }
+  .steps i.on { background: var(--pacific); } .steps i.done { background: var(--black); }
+
+  /* The sentence. Blanks are hairline-underlined and grey until tapped. */
+  .line { font-family: var(--serif); font-weight: 900; font-size: clamp(28px, 3.6vw, 52px); line-height: 1.02; letter-spacing: -.03em; margin: 0 0 24px; text-wrap: pretty; }
+  .slot { display: inline; color: var(--mono20); border-bottom: 2px solid var(--mono20); padding-bottom: .02em; cursor: pointer; transition: color .3s, border-color .3s; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .slot.on { color: var(--mono40); border-color: var(--pacific); }
+  .slot.filled { color: var(--black); border-color: transparent; }
+  .slot.filled:hover, .slot.filled:focus-visible { border-color: var(--pacific); outline: none; }
+  .slot :global(.w) { display: inline-block; animation: drop .45s var(--ease) both; }
+  .stop { display: inline-block; transform: scale(0); transform-origin: 50% 70%; transition: transform .5s var(--bounce); }
+  .stop.in { transform: scale(1); }
+  @keyframes drop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* Chips, set like sorts from a type case: square, hairline, black fill on tap. */
+  .ask { min-height: 132px; }
+  .ask :global(p) { margin: 0 0 10px; font-size: 14px; color: var(--mono60); }
+  .ask :global(.chips) { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ask :global(.chip) { position: relative; isolation: isolate; overflow: hidden; cursor: pointer; text-align: left; font: inherit; font-weight: 300; font-size: 15px; line-height: 1.25; color: var(--black); background: transparent; border: 1px solid var(--mono40); border-radius: 0; padding: 11px 14px; animation: drop .4s var(--ease) both; }
+  .ask :global(.chip)::before { content: ""; position: absolute; inset: 0; background: var(--black); transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); z-index: -1; }
+  .ask :global(.chip):hover, .ask :global(.chip):focus-visible { color: var(--white); border-color: var(--black); outline: none; }
+  .ask :global(.chip):hover::before, .ask :global(.chip):focus-visible::before { transform: scaleX(1); }
+  .ask :global(.chip.own) { border-style: dashed; color: var(--mono60); }
+  .ask :global(.own-line) { display: none; margin-top: 10px; }
+  .ask :global(.own-line.on) { display: block; }
+  .ask :global(.own-line input) { display: block; width: 100%; font: inherit; font-size: 17px; font-weight: 300; background: transparent; border: 0; border-bottom: 1px solid var(--black); border-radius: 0; padding: 12px 0 8px; outline: none; caret-color: var(--pacific); }
+  .ask :global(.own-line small) { display: block; margin-top: 6px; font-size: 12px; color: var(--mono60); }
+
+  /* The finish: verdict, email, name, send. Revealed once the sentence is complete. */
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .finish { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .7s var(--ease); }
+  .finish.open { grid-template-rows: 1fr; }
+  .finish > div { overflow: hidden; opacity: 0; transform: translateY(8px); transition: opacity .5s .15s, transform .6s var(--ease) .15s; }
+  .finish.open > div { opacity: 1; transform: none; }
+  .verdict { margin: 0; font-size: 14px; color: var(--mono60); }
+  .verdict :global(b) { color: var(--pacific); font-weight: 700; }
+  .two { display: grid; grid-template-columns: 1fr; gap: 0 28px; }
+  @media (min-width: 560px) { .two { grid-template-columns: 1.2fr 1fr; } }
+  .field { position: relative; }
+  .field input { display: block; width: 100%; font: inherit; font-size: clamp(16px, 1.2vw, 17px); font-weight: 300; color: var(--black); background: transparent; border: 0; border-radius: 0; padding: 18px 0 10px; outline: none; -webkit-appearance: none; appearance: none; caret-color: var(--pacific); }
+  .field input::placeholder { color: var(--mono60); opacity: 1; }
+  .hair { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--mono40); }
+  .hair::after { content: ""; position: absolute; inset: 0; background: var(--pacific); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease); }
+  .field:focus-within .hair::after { transform: scaleX(1); }
+  /* The opt-in. A square hairline box; when ticked, the brand's full stop appears inside it. */
+  .optin { display: flex; align-items: flex-start; gap: 14px; margin-top: 24px; cursor: pointer; font-size: 14px; line-height: 1.4; color: var(--black); -webkit-tap-highlight-color: transparent; }
+  .optin input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .optin .box { flex: none; width: 20px; height: 20px; margin-top: 0; border: 1px solid var(--mono40); background: transparent; position: relative; transition: border-color .25s var(--ease); }
+  .optin .box::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--pacific); transform: scale(0); transition: transform .35s var(--bounce); }
+  .optin:hover .box, .optin input:focus-visible + .box { border-color: var(--black); }
+  .optin input:checked + .box { border-color: var(--black); }
+  .optin input:checked + .box::after { transform: scale(1); }
+  .optin input:focus-visible + .box { outline: 1px solid var(--pacific); outline-offset: 3px; }
+  .optin span { padding-top: 1px; }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-top: 22px; }
+  .send { position: relative; overflow: hidden; isolation: isolate; cursor: pointer; font: inherit; font-weight: 700; font-size: 16px; letter-spacing: .01em; color: var(--white); background: var(--black); border: 0; border-radius: 0; padding: 18px 30px; min-width: 130px; }
+  .send .fill { position: absolute; inset: 0; background: var(--pacific); transform: translateX(-101%); transition: transform .55s var(--ease); z-index: -1; }
+  .send:hover .fill, .send:focus-visible .fill { transform: none; }
+  .send .dot { font-style: normal; transition: color .35s; }
+  .send:hover .dot, .send:focus-visible .dot { color: var(--white); }
+  .send[disabled] { cursor: default; opacity: .6; }
+  .promise { margin: 0; font-size: 13px; color: var(--mono60); line-height: 1.3; }
+  .err { display: none; margin: 14px 0 0; color: var(--mono70); font-size: 14px; line-height: 1.3; }
+  .err.show { display: block; }
+
+  .done-h { font-family: var(--serif); font-weight: 900; font-size: clamp(40px, 4.6vw, 68px); letter-spacing: -.03em; line-height: .95; margin: 0 0 18px; }
+  .done .rule { margin-bottom: 18px; }
+  .done p { margin: 0; font-size: clamp(17px, 1.4vw, 20px); line-height: 1.3; max-width: 44ch; }
+</style>
+
+<script>
+  const root = document.getElementById('tap') as HTMLElement;
+  const OPTIONS = JSON.parse(root.dataset.options || '{}') as Record<string, { ask: string; chips: string[] }>;
+  const ORDER = ['who', 'what', 'need'] as const;
+  const BLANK: Record<string, string> = { who: 'a … brand', what: "something's up", need: 'something' };
+  const picked: Record<string, string> = {};
+  const ask = document.getElementById('ask') as HTMLElement, finish = document.getElementById('finish') as HTMLElement;
+  const stop = document.getElementById('stop') as HTMLElement, steps = document.getElementById('steps') as HTMLElement;
+  const form = document.getElementById('enquiry') as HTMLFormElement, done = document.getElementById('done') as HTMLElement, err = document.getElementById('err') as HTMLElement;
+
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+  const lineText = () => `We're ${picked.who} and ${picked.what}. We need ${picked.need}.`;
+
+  function setSlot(k: string, text: string) {
+    const el = document.getElementById('s-' + k) as HTMLElement;
+    el.classList.add('filled'); el.classList.remove('on');
+    el.innerHTML = text.split(' ').map((w, i) => `<span class="w" style="animation-delay:${i * .04}s">${esc(w)}</span>`).join(' ');
+    picked[k] = text;
+    (document.getElementById('f-' + k) as HTMLInputElement).value = text;
+  }
+  function showStep(i: number) {
+    ORDER.forEach((k, j) => (document.getElementById('s-' + k) as HTMLElement).classList.toggle('on', j === i && !picked[k]));
+    Array.from(steps.children).forEach((b, j) => { b.classList.toggle('on', j === i); b.classList.toggle('done', !!picked[ORDER[j]]); });
+    if (i >= ORDER.length) { ask.innerHTML = ''; ask.style.minHeight = '0'; return complete(); }
+    ask.style.minHeight = '';
+    const k = ORDER[i], o = OPTIONS[k];
+    ask.innerHTML = `<p>${esc(o.ask)}</p><div class="chips">${o.chips.map((c, n) => `<button type="button" class="chip" style="animation-delay:${n * .04}s" data-v="${esc(c)}">${esc(c)}</button>`).join('')}<button type="button" class="chip own" id="ownChip">something else…</button></div><div class="own-line" id="ownLine"><input id="ownIn" maxlength="80" placeholder="Say it in a few words"><small>Enter to set it.</small></div>`
+      ;
+    ask.querySelectorAll<HTMLButtonElement>('.chip[data-v]').forEach((b) => b.addEventListener('click', () => { setSlot(k, b.dataset.v || ''); next(); }));
+    (document.getElementById('ownChip') as HTMLElement).addEventListener('click', () => { (document.getElementById('ownLine') as HTMLElement).classList.add('on'); (document.getElementById('ownIn') as HTMLInputElement).focus(); });
+    (document.getElementById('ownIn') as HTMLInputElement).addEventListener('keydown', (e) => { const t = e.target as HTMLInputElement; if (e.key === 'Enter' && t.value.trim()) { e.preventDefault(); setSlot(k, t.value.trim().replace(/\.$/, '')); next(); } });
+  }
+  function next() { const n = ORDER.findIndex((k) => !picked[k]); showStep(n === -1 ? ORDER.length : n); }
+  function complete() {
+    stop.classList.add('in');
+    const words = lineText().split(/\s+/).length;
+    (document.getElementById('verdict') as HTMLElement).innerHTML = `${words} words. <b>Pithy.</b>`;
+    (document.getElementById('f-message') as HTMLInputElement).value = lineText();
+    finish.classList.add('open'); finish.removeAttribute('inert');
+    setTimeout(() => { if (matchMedia('(pointer: fine)').matches) (document.getElementById('email') as HTMLInputElement).focus({ preventScroll: true }); }, 500);
+  }
+  function reopen(k: string) {
+    delete picked[k];
+    const el = document.getElementById('s-' + k) as HTMLElement; el.classList.remove('filled'); el.textContent = BLANK[k];
+    stop.classList.remove('in'); finish.classList.remove('open'); finish.setAttribute('inert', '');
+    showStep(ORDER.indexOf(k as any));
+  }
+  document.querySelectorAll<HTMLElement>('.slot').forEach((el) => {
+    const go = () => { const k = el.dataset.k || ''; if (picked[k]) reopen(k); };
+    el.addEventListener('click', go);
+    el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
+  showStep(0);
+
+  // Sending: Netlify first, HubSpot best-effort on top.
+  function cookie(n: string): string | null { const m = document.cookie.match('(^|;)\\s*' + n + '=([^;]*)'); return m ? decodeURIComponent(m[2]) : null; }
+  async function toHubSpot(fd: FormData, portalId: string, formId: string) {
+    if (!formId) return;
+    const name = String(fd.get('name') ?? '').trim(); const sp = name.indexOf(' ');
+    const base = [
+      { name: 'firstname', value: sp > 0 ? name.slice(0, sp) : name }, { name: 'lastname', value: sp > 0 ? name.slice(sp + 1) : '' },
+      { name: 'email', value: String(fd.get('email') ?? '') },
+      { name: 'message', value: String(fd.get('message') ?? '') },
+    ];
+    // The three taps as their own contact properties. If the HubSpot form doesn't carry them yet,
+    // HubSpot rejects the whole submission, so retry with the taps folded into the message instead.
+    const optedIn = fd.get('marketing') === 'yes';
+    const taps = [
+      { name: 'pith_who', value: String(fd.get('who') ?? '') }, { name: 'pith_what', value: String(fd.get('what') ?? '') }, { name: 'pith_need', value: String(fd.get('need') ?? '') },
+      { name: 'pith_marketing_optin', value: optedIn ? 'true' : 'false' },
+    ];
+    const context: Record<string, string> = { pageUri: location.href, pageName: document.title };
+    const hutk = cookie('hubspotutk'); if (hutk) context.hutk = hutk;
+    // Marketing opt-in. Recorded through HubSpot's legal-consent options so it carries the exact
+    // wording and a timestamp. Replying to the enquiry itself needs no consent (legitimate interest).
+    const subId = form.dataset.hsSub ? Number(form.dataset.hsSub) : 0;
+    const legal = optedIn && subId ? { consent: { consentToProcess: true, text: 'By sending, you\'re happy for us to reply.', communications: [{ value: true, subscriptionTypeId: subId, text: form.dataset.consentText ?? '' }] } } : undefined;
+    // The portal lives on HubSpot's EU data centre, so submissions go to the eu1 host.
+    const url = `https://api-eu1.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`;
+    const post = (fields: { name: string; value: string }[]) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields, context, ...(legal ? { legalConsentOptions: legal } : {}) }) });
+    let r = await post([...base, ...taps]);
+    if (r.status === 400) {
+      // A custom property is missing from the HubSpot form. Fold everything into the message so nothing is lost.
+      const folded = base.map((f) => f.name === 'message' ? { ...f, value: `${f.value}\n(who: ${fd.get('who')} · what: ${fd.get('what')} · need: ${fd.get('need')} · marketing opt-in: ${optedIn ? 'YES, ticked on the site' : 'no'})` } : f);
+      r = await post(folded);
+    }
+    if (!r.ok) throw new Error('hubspot ' + r.status);
+  }
+  async function toNetlify(fd: FormData) {
+    const r = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fd as unknown as Record<string, string>).toString() });
+    if (!r.ok) throw new Error('netlify ' + r.status);
+  }
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!picked.who || !picked.what || !picked.need) return;
+    if (!form.reportValidity()) return;
+    const btn = form.querySelector('.send') as HTMLButtonElement, label = btn.querySelector('.label') as HTMLElement;
+    btn.disabled = true; label.textContent = 'Sending'; err.classList.remove('show');
+    const fd = new FormData(form);
+    try {
+      await toNetlify(fd);
+      await toHubSpot(fd, form.dataset.hsPortal ?? '', form.dataset.hsForm ?? '').catch((x) => console.warn(x));
+      root.querySelectorAll<HTMLElement>('.kick, .line, .ask, form').forEach((el) => (el.hidden = true));
+      done.hidden = false;
+      (document.getElementById('done-p') as HTMLElement).textContent = `"${lineText()}" A real person reads that and replies from liam@lsdagency.co.uk.`;
+    } catch (x) { console.warn(x); err.classList.add('show'); btn.disabled = false; label.innerHTML = 'Send<i class="dot">.</i>'; }
+  });
+</script>

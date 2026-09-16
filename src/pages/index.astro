@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import TapForm from '../components/TapForm.astro';
+---
+<Base title="Pithy by Nature - Pith"
+  description="An independent creative performance studio for growing brands. Let's work together in just three clicks."
+  social="An independent creative performance studio for growing brands. Let's work together in just three clicks.">
+  <main class="hero">
+    <section class="ask">
+      <h1 class="sr">What do you need? Three taps will do.</h1>
+      <p class="intro-line rv" style="--d:.15s">A creative performance studio <span class="brk">for brands with big plans.</span></p>
+      <hr class="rule intro-rule draw" style="--d:.3s" />
+      <TapForm />
+
+    </section>
+
+    <div class="orange rv" style="--d:.5s" id="orange" aria-hidden="true">
+      <img src="/pith-orange.webp" srcset="/pith-orange-s.webp 900w, /pith-orange.webp 1844w" sizes="(max-width: 959px) 100vw, 60vw"
+           alt="" width="1844" height="1895" decoding="async" fetchpriority="high" />
+    </div>
+  </main>
+</Base>
+
+<style>
+  .hero { position: static; flex: 1; display: grid; grid-template-columns: 1fr; align-content: center; padding: clamp(28px, 5vh, 56px) 0 clamp(24px, 4vh, 40px); }
+  @media (min-width: 960px) { .hero { grid-template-columns: minmax(0, 50%) 1fr; } }
+  .ask { position: relative; z-index: 1; max-width: 680px; }
+  /* The intro: one bold line, one light line in the same size family, then a hairline before the ask. */
+  .intro-line { margin: 0; font-weight: 300; font-size: clamp(26px, 2.4vw, 34px); line-height: 1.15; color: var(--black); text-wrap: pretty; }
+  @media (min-width: 960px) { .intro-line .brk { display: block; } } /* break before "for brands" on desktop; phones wrap naturally */
+  .intro-rule { margin: 28px 0 28px; border-top-color: var(--mono20); }
+
+
+  /* The photo, the way the book's closing page sets it: hand in from the right, fruit
+     in the open half of the page, bleeding off the top, right and bottom. */
+  .orange { position: absolute; z-index: 0; pointer-events: none; will-change: transform; width: 60vw; left: 55vw; top: -3vh; }
+  .orange img { display: block; width: 100%; height: auto; }
+  .orange.rv { transform: translateY(30px); }
+  .orange.rv.in { transform: none; transition: opacity .9s var(--ease); }
+  /* Mobile: the same idea as desktop, the hand in from the right edge and the fruit big, in its
+     own space below the words rather than cropped into a band. */
+  @media (max-width: 959px) {
+    /* Phone: the photo is a background layer behind the words, big, turned so the arm leaves
+       through the right edge of the screen. The file's two crop edges (right and bottom) stay
+       off-screen, so nothing ever looks cut. The page's overflow:hidden clips the bleed. */
+    .hero { position: static; padding-bottom: 72vw; } /* keeps Liam's photo placement below the chips now the lower block has gone */
+    /* Liam's own placement, 15 Sep, set in the browser and copied here. */
+    .orange { position: absolute; inset: auto -188vw -95vw auto; width: 250vw; transform: rotate(-34deg); transform-origin: 28% 56%; }
+  }
+</style>
+
+<script>
+  // Pointer parallax on the photo: a few pixels against the cursor, eased each frame.
+  const el = document.getElementById('orange');
+  const fine = matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (el && fine) {
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+    const tick = () => {
+      cx += (tx - cx) * 0.08; cy += (ty - cy) * 0.08;
+      el.style.transform = `translate3d(${cx.toFixed(2)}px, ${cy.toFixed(2)}px, 0)`;
+      raf = (Math.abs(tx - cx) > 0.05 || Math.abs(ty - cy) > 0.05) ? requestAnimationFrame(tick) : 0;
+    };
+    window.addEventListener('pointermove', (e) => {
+      tx = -((e.clientX / innerWidth) - 0.5) * 24; ty = -((e.clientY / innerHeight) - 0.5) * 18;
+      if (!raf) raf = requestAnimationFrame(tick);
+    }, { passive: true });
+  }
+</script>
